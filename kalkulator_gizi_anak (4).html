@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Status Gizi Anak</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fff8f0;
+      color: #333;
+    }
+    h1 {
+      color: orange;
+    }
+    .gender-option {
+      display: inline-block;
+      text-align: center;
+      margin-right: 20px;
+    }
+    .gender-option input {
+      display: none;
+    }
+    .gender-option label {
+      display: block;
+      cursor: pointer;
+    }
+    .gender-option img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+    }
+    .gender-option input:checked + label img {
+      border-color: orange;
+    }
+    form label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input {
+      width: 100%;
+      padding: 5px;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: orange;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .hasil, .saran {
+      margin-top: 20px;
+      background-color: #fff3e0;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    canvas {
+      margin-top: 30px;
+      max-width: 100%;
+    }
+    @media (max-width: 600px) {
+      .gender-option {
+        margin-bottom: 10px;
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Kalkulator Status Gizi Anak</h1>
+  <form id="formGizi">
+    <label>Nama Anak
+      <input type="text" id="nama">
+    </label>
+    <label>Usia (bulan)
+      <input type="number" id="usia">
+    </label>
+    <label>Berat Badan (kg)
+      <input type="number" id="bb">
+    </label>
+    <label>Tinggi Badan (cm)
+      <input type="number" id="tb">
+    </label>
+    <div>
+      <label>Jenis Kelamin</label><br>
+      <div class="gender-option">
+        <input type="radio" id="laki" name="jk" value="L" checked>
+        <label for="laki"><img src="https://img.icons8.com/color/96/boy.png" alt="Laki-laki"><br>Laki-laki</label>
+      </div>
+      <div class="gender-option">
+        <input type="radio" id="perempuan" name="jk" value="P">
+        <label for="perempuan"><img src="https://img.icons8.com/color/96/girl.png" alt="Perempuan"><br>Perempuan</label>
+      </div>
+    </div>
+    <button type="button" onclick="hitungGizi()">Hitung Status Gizi</button>
+  </form>
+
+  <div class="hasil" id="hasil"></div>
+  <div class="saran" id="saran"></div>
+
+  <canvas id="chartBBU"></canvas>
+  <canvas id="chartTBU"></canvas>
+  <canvas id="chartBBTB"></canvas>
+
+  <button onclick="unduhPDF()">Unduh PDF</button>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
