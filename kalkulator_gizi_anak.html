@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Status Gizi Anak</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff6ef;
+      color: #333;
+    }
+    .container {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border: 2px solid #ff9a3c;
+    }
+    h2 {
+      text-align: center;
+      color: #ff6b00;
+      margin-bottom: 25px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #ff6b00;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #e65a00;
+    }
+    .hasil {
+      background: #fff3e6;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      border-left: 5px solid #ff6b00;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #ffedd9;
+    }
+    h3 {
+      color: #ff6b00;
+      margin-top: 30px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+    li strong {
+      color: #e65a00;
+    }
+    canvas {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2><i class="fas fa-child"></i> Kalkulator Status Gizi Anak</h2>
+    <form id="formGizi">
+      <label for="nama">Nama Anak:</label>
+      <input type="text" id="nama" required>
+      <label for="jk">Jenis Kelamin:</label>
+      <select id="jk">
+        <option value="L">Laki-laki</option>
+        <option value="P">Perempuan</option>
+      </select>
+      <label for="umur">Umur (bulan):</label>
+      <input type="number" id="umur" required>
+      <label for="bb">Berat Badan (kg):</label>
+      <input type="number" id="bb" step="0.1" required>
+      <label for="tb">Tinggi Badan (cm):</label>
+      <input type="number" id="tb" step="0.1" required>
+      <button type="button" onclick="hitungGizi()"><i class="fas fa-calculator"></i> Hitung</button>
+      <button type="button" onclick="cetakPDF()"><i class="fas fa-file-pdf"></i> Unduh PDF</button>
+    </form>
+    <div class="hasil" id="hasil"></div>
+    <canvas id="chartGizi" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    let hasilData = "";
+
+    function hitungGizi() {
+      let nama = document.getElementById('nama').value;
+      let jk = document.getElementById('jk').value;
+      let umur = parseInt(document.getElementById('umur').value);
+      let bb = parseFloat(document.getElementById('bb').value);
+      let tb = parseFloat(document.getElementById('tb').value);
+
+      let statusBBU = "";
+      let statusTBU = "";
+      let statusBBTB = "";
+      let saranBBU = "";
+      let saranTBU = "";
+      let saranBBTB = "";
+
+      if (bb < umur * 0.2) {
+        statusBBU = "Berat Badan Sangat Kurang";
+        saranBBU = "Perlu intervensi gizi segera dan konsultasi dengan tenaga kesehatan.";
+      } else if (bb < umur * 0.25) {
+        statusBBU = "Berat Badan Kurang";
+        saranBBU = "Perlu perbaikan pola makan dan pantauan berkala.";
+      } else if (bb <= umur * 0.35) {
+        statusBBU = "Berat Badan Normal";
+        saranBBU = "Pertahankan pola makan anak.";
+      } else {
+        statusBBU = "Risiko Berat Badan Lebih";
+        saranBBU = "Perlu evaluasi pola makan dan aktivitas anak.";
+      }
+
+      if (tb < umur * 1.5) {
+        statusTBU = "Sangat Pendek";
+        saranTBU = "Konsultasikan segera untuk evaluasi stunting.";
+      } else if (tb < umur * 1.7) {
+        statusTBU = "Pendek";
+        saranTBU = "Perlu pemantauan dan asupan gizi yang cukup.";
+      } else if (tb <= umur * 2.2) {
+        statusTBU = "Normal";
+        saranTBU = "Pertahankan tumbuh kembang anak.";
+      } else {
+        statusTBU = "Tinggi";
+        saranTBU = "Tinggi badan baik, terus pantau pertumbuhan.";
+      }
+
+      let idealBBTB = tb / 2.5;
+      if (bb < idealBBTB * 0.85) {
+        statusBBTB = "Gizi Buruk";
+        saranBBTB = "Segera konsultasi ke tenaga kesehatan, anak berisiko wasting.";
+      } else if (bb < idealBBTB * 0.95) {
+        statusBBTB = "Gizi Kurang";
+        saranBBTB = "Perlu asupan gizi tambahan dan pantauan berkala.";
+      } else if (bb <= idealBBTB * 1.2) {
+        statusBBTB = "Gizi Baik";
+        saranBBTB = "Gizi anak baik, terus pertahankan.";
+      } else {
+        statusBBTB = "Gizi Lebih";
+        saranBBTB = "Perlu evaluasi pola makan dan aktivitas fisik.";
+      }
+
+      hasilData = `\n        Nama: ${nama}\n        Umur: ${umur} bulan\n        Jenis Kelamin: ${jk === 'L' ? 'Laki-laki' : 'Perempuan'}\n        BB: ${bb} kg, TB: ${tb} cm\n\n        Status BB/U: ${statusBBU}\n        Status TB/U: ${statusTBU}\n        Status BB/TB: ${statusBBTB}\n\n        Saran:\n        - BB/U: ${saranBBU}\n        - TB/U: ${saranTBU}\n        - BB/TB: ${saranBBTB}`;
+
+      document.getElementById("hasil").innerHTML = `
+        <h3><i class="fas fa-clipboard-check"></i> Hasil Pemeriksaan Gizi</h3>
+        <table>
+          <tr><th>Nama Anak</th><td>${nama}</td></tr>
+          <tr><th>Umur</th><td>${umur} bulan</td></tr>
+          <tr><th>Jenis Kelamin</th><td>${jk === 'L' ? 'Laki-laki' : 'Perempuan'}</td></tr>
+          <tr><th>Berat Badan</th><td>${bb} kg</td></tr>
+          <tr><th>Tinggi Badan</th><td>${tb} cm</td></tr>
+        </table>
+
+        <h3><i class="fas fa-weight"></i> Status Gizi</h3>
+        <table>
+          <tr><th>BB/U</th><td>${statusBBU}</td></tr>
+          <tr><th>TB/U</th><td>${statusTBU}</td></tr>
+          <tr><th>BB/TB</th><td>${statusBBTB}</td></tr>
+        </table>
+
+        <h3><i class="fas fa-lightbulb"></i> Saran</h3>
+        <ul>
+          <li><strong>BB/U:</strong> ${saranBBU}</li>
+          <li><strong>TB/U:</strong> ${saranTBU}</li>
+          <li><strong>BB/TB:</strong> ${saranBBTB}</li>
+        </ul>
+      `;
+
+      const ctx = document.getElementById('chartGizi').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['BB/U', 'TB/U', 'BB/TB'],
+          datasets: [{
+            label: 'Skor Status (0 = Buruk, 3 = Baik)',
+            data: [
+              statusBBU.includes('Sangat') ? 0 : statusBBU.includes('Kurang') ? 1 : statusBBU.includes('Normal') ? 2 : 3,
+              statusTBU.includes('Sangat') ? 0 : statusTBU.includes('Pendek') ? 1 : statusTBU.includes('Normal') ? 2 : 3,
+              statusBBTB.includes('Buruk') ? 0 : statusBBTB.includes('Kurang') ? 1 : statusBBTB.includes('Baik') ? 2 : 3
+            ],
+            backgroundColor: ['#ff6b00', '#ffa94d', '#ffddc1']
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true, max: 3 }
+          }
+        }
+      });
+    }
+
+    function cetakPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(12);
+      doc.text("Laporan Status Gizi Anak", 10, 10);
+      doc.text(hasilData, 10, 20);
+      doc.save("status_gizi_anak.pdf");
+    }
+  </script>
+</body>
+</html>
