@@ -9,44 +9,53 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #fffaf5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #fff6eb, #fff);
       color: #333;
       max-width: 800px;
       margin: auto;
-      padding: 20px;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
     }
 
     h1 {
-      color: #ff6600;
+      color: #d35400;
       text-align: center;
+      margin-bottom: 30px;
     }
 
     label {
       display: block;
       margin-top: 15px;
+      font-weight: bold;
     }
 
     input, select {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
 
     button {
-      background-color: #ff6600;
+      background-color: #e67e22;
       color: white;
-      padding: 10px 20px;
+      padding: 12px 24px;
       border: none;
       margin-top: 20px;
       cursor: pointer;
+      border-radius: 5px;
+      font-size: 16px;
     }
 
     .hasil, .saran {
-      background-color: #fff3e0;
-      padding: 15px;
+      background-color: #fef2e0;
+      padding: 20px;
       margin-top: 20px;
-      border-left: 5px solid #ff6600;
+      border-left: 6px solid #e67e22;
+      border-radius: 5px;
     }
 
     canvas {
@@ -95,12 +104,11 @@
       BBTB: { 75: { median: 9.0, sd1: 10.2, sd2: 11.5, sdNeg1: 7.8, sdNeg2: 6.6, sdNeg3: 5.5 } }
     };
 
-    function hitungZ(bb, referensi) {
-      if (!referensi) return null;
-      const { median, sd1, sd2, sdNeg1, sdNeg2, sdNeg3 } = referensi;
-      if (bb < sdNeg3) return '< -3 SD';
-      else if (bb < sdNeg2) return '-3 s/d -2 SD';
-      else if (bb < sd1) return '-2 s/d +1 SD';
+    function hitungZ(nilai, ref) {
+      if (!ref) return null;
+      if (nilai < ref.sdNeg3) return '< -3 SD';
+      else if (nilai < ref.sdNeg2) return '-3 s/d -2 SD';
+      else if (nilai < ref.sd1) return '-2 s/d +1 SD';
       else return '> +1 SD';
     }
 
@@ -163,17 +171,22 @@
     }
 
     function buatGrafik() {
-      new Chart(document.getElementById("chartBBU"), {
+      const chartConfig = (label, data, id) => new Chart(document.getElementById(id), {
         type: 'line',
         data: {
           labels: ['-3SD', '-2SD', 'Median', '+2SD'],
-          datasets: [{
-            label: 'BB/U',
-            data: [5.5, 6.6, 9.0, 11.5],
-            borderColor: '#ff6600'
-          }]
+          datasets: [{ label, data, borderColor: '#e67e22', fill: false }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: false }
+          }
         }
       });
+
+      chartConfig('BB/U', [5.5, 6.6, 9.0, 11.5], 'chartBBU');
+      chartConfig('TB/U', [69.3, 71.2, 75.0, 78.8], 'chartTBU');
+      chartConfig('BB/TB', [5.5, 6.6, 9.0, 11.5], 'chartBBTB');
     }
 
     function unduhPDF() {
@@ -187,4 +200,3 @@
 </body>
 
 </html>
-
