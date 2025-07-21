@@ -1,315 +1,218 @@
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #fff8f0;
-  color: #333;
-}
+<!DOCTYPE html>
+<html lang="id">
 
-h1, h2, h3, label, strong {
-  color: #d35400;
-}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Gizi Balita</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #fff6eb, #fff);
+      color: #333;
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
 
-button, input, select {
-  border: 1px solid #e67e22;
-  padding: 8px;
-  border-radius: 5px;
-}
+    h1 {
+      color: #d35400;
+      text-align: center;
+      margin-bottom: 30px;
+    }
 
-button {
-  background-color: #e67e22;
-  color: white;
-  cursor: pointer;
-}
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
 
-button:hover {
-  background-color: #d35400;
-}
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
 
-#hasil, #saran {
-  background-color: #fff3e0;
-  border-left: 5px solid #e67e22;
-  padding: 1em;
-  margin-top: 1em;
-  border-radius: 5px;
-}
-canvas {
-  margin-top: 2em;
-  background: #fffaf5;
-  border: 1px solid #f0b27a;
-  border-radius: 8px;
-}
-</style>
+    button {
+      background-color: #e67e22;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      margin-top: 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 16px;
+    }
 
-// Data standar BB/U dan TB/U untuk laki-laki dan perempuan (contoh sebagian)
-const dataBBU = {
-  l: {
-    12: [6.9, 7.7, 8.6, 9.6, 10.8],
-    24: [8.6, 9.7, 10.8, 12.2, 13.6],
-    36: [10.0, 11.3, 12.7, 14.3, 16.2],
-    48: [11.2, 12.7, 14.4, 16.3, 18.6],
-    60: [12.4, 14.1, 16.0, 18.3, 21.0]
-  },
-  p: {
-    12: [6.5, 7.3, 8.1, 9.0, 10.1],
-    24: [8.1, 9.2, 10.4, 11.7, 13.1],
-    36: [9.5, 10.8, 12.2, 13.8, 15.5],
-    48: [10.7, 12.2, 13.8, 15.6, 17.5],
-    60: [11.8, 13.4, 15.1, 17.0, 19.1]
-  }
-};
+    .hasil, .saran {
+      background-color: #fef2e0;
+      padding: 20px;
+      margin-top: 20px;
+      border-left: 6px solid #e67e22;
+      border-radius: 5px;
+    }
 
-const dataTBU = {
-  l: {
-    12: [68.6, 71.0, 73.4, 75.7, 78.1],
-    24: [78.7, 81.7, 84.8, 87.8, 90.9],
-    36: [85.0, 88.7, 92.4, 96.1, 99.8],
-    48: [90.7, 94.9, 99.1, 103.3, 107.5],
-    60: [96.1, 100.7, 105.3, 110.0, 114.6]
-  },
-  p: {
-    12: [67.3, 69.6, 72.0, 74.2, 76.6],
-    24: [77.0, 80.0, 83.1, 86.1, 89.2],
-    36: [83.1, 86.8, 90.6, 94.4, 98.3],
-    48: [88.7, 93.0, 97.3, 101.6, 106.0],
-    60: [94.0, 98.8, 103.6, 108.4, 113.3]
-  }
-};
+    .hasil strong {
+      font-size: 18px;
+      display: block;
+      margin-bottom: 10px;
+    }
 
-const dataBBTB = {
-  l: {
-    75: [7.5, 8.1, 8.8, 9.5, 10.3],
-    80: [8.2, 8.9, 9.6, 10.4, 11.3],
-    85: [9.1, 9.8, 10.6, 11.5, 12.5],
-    90: [10.1, 10.9, 11.8, 12.7, 13.8],
-    95: [11.1, 11.9, 12.8, 13.9, 15.1]
-  },
-  p: {
-    75: [7.2, 7.8, 8.5, 9.2, 10.0],
-    80: [7.9, 8.6, 9.3, 10.1, 11.0],
-    85: [8.8, 9.5, 10.2, 11.0, 12.0],
-    90: [9.8, 10.5, 11.2, 12.0, 13.0],
-    95: [10.7, 11.5, 12.3, 13.2, 14.2]
-  }
-};
+    canvas {
+      margin-top: 30px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+    }
+  </style>
+</head>
 
-function kategorikanZscore(z, tipe) {
-  if (tipe === 'BB/U') {
-    if (z < -3) return 'Berat badan sangat kurang';
-    if (z < -2) return 'Berat badan kurang';
-    if (z <= 1) return 'Berat badan normal';
-    return 'Risiko berat badan lebih';
-  }
-  if (tipe === 'TB/U') {
-    if (z < -3) return 'Sangat pendek';
-    if (z < -2) return 'Pendek';
-    if (z <= 3) return 'Normal';
-    return 'Tinggi';
-  }
-  if (tipe === 'BB/TB') {
-    if (z < -3) return 'Gizi buruk';
-    if (z < -2) return 'Gizi kurang';
-    if (z <= 1) return 'Gizi baik';
-    if (z <= 2) return 'Risiko gizi lebih';
-    if (z <= 3) return 'Gizi lebih';
-    return 'Obesitas';
-  }
-  return 'Belum tersedia';
-}
+<body>
+  <h1>Kalkulator Status Gizi Balita</h1>
+  <form id="formGizi">
+    <label>Nama Anak
+      <input type="text" id="nama">
+    </label>
+    <label>Usia (bulan)
+      <input type="number" id="usia">
+    </label>
+    <label>Berat Badan (kg)
+      <input type="number" id="bb">
+    </label>
+    <label>Tinggi Badan (cm)
+      <input type="number" id="tb">
+    </label>
+    <label>Jenis Kelamin
+      <select id="jk">
+        <option value="L">Laki-laki</option>
+        <option value="P">Perempuan</option>
+      </select>
+    </label>
+    <button type="button" onclick="hitungGizi()">Hitung Status Gizi</button>
+  </form>
 
-function hitungZscore(nilai, umur, data) {
-  const zdata = data[umur];
-  if (!zdata) return null;
-  const median = zdata[3];
-  const sd = zdata[4] - median;
-  return (nilai - median) / sd;
-}
+  <div class="hasil" id="hasil"></div>
+  <div class="saran" id="saran"></div>
 
-function tampilkanGrafik(bb, umur, jk) {
-  const labels = Object.keys(dataBBU[jk]).map((u) => u + ' bln');
-  const dataAnak = Object.keys(dataBBU[jk]).map((u) => parseInt(u) === umur ? bb : null);
-  const dataMedian = Object.values(dataBBU[jk]).map((v) => v[3]);
+  <canvas id="chartBBU"></canvas>
+  <canvas id="chartTBU"></canvas>
+  <canvas id="chartBBTB"></canvas>
 
-  const ctx1 = document.createElement("canvas");
-  ctx1.height = 300;
-  document.getElementById("hasilStatus").appendChild(ctx1);
-  new Chart(ctx1, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'BB/U Median',
-          data: dataMedian,
-          borderColor: '#aaa',
-          borderWidth: 1,
-          fill: false
+  <button onclick="unduhPDF()">Unduh PDF</button>
+
+  <script>
+    const standarGizi = {
+      BBU: [5.5, 6.6, 9.0, 10.2, 11.5],
+      TBU: [69.3, 71.2, 75.0, 90.0, 96.0],
+      BBTB: [5.5, 6.6, 9.0, 10.2, 11.5] // <-3SD, -3 s/d -2 SD, -2 s/d +1 SD, +1 s/d +2 SD, >+2 SD
+    };
+
+    function cariKategori(nilai, batas, indeks) {
+      if (indeks === 'BBTB') {
+        if (nilai < batas[0]) return '< -3 SD';
+        if (nilai < batas[1]) return '-3 s/d -2 SD';
+        if (nilai <= batas[2]) return '-2 s/d +1 SD';
+        if (nilai <= batas[3]) return '> +1 s/d +2 SD';
+        return '> +2 SD';
+      } else {
+        if (nilai < batas[0]) return '< -3 SD';
+        if (nilai < batas[1]) return '-3 s/d -2 SD';
+        if (nilai <= batas[3]) return '-2 s/d +3 SD';
+        return '> +3 SD';
+      }
+    }
+
+    function klasifikasi(indeks, z) {
+      const kategori = {
+        BBU: {
+          '< -3 SD': 'Berat badan sangat kurang',
+          '-3 s/d -2 SD': 'Berat badan kurang',
+          '-2 s/d +3 SD': 'Berat badan normal',
+          '> +3 SD': 'Perlu konfirmasi dengan BB/TB dan IMT/U'
         },
-        {
-          label: 'Berat Anak',
-          data: dataAnak,
-          borderColor: '#f80',
-          backgroundColor: '#f804',
-          fill: true
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'top' },
-        title: { display: true, text: 'Grafik Berat Badan Menurut Umur (BB/U)' }
-      }
-    }
-  });
-
-  const tinggi = Object.keys(dataTBU[jk]).map(Number);
-  const dataTinggi = tinggi.map((u) => u + ' bln');
-  const dataTinggiMedian = Object.values(dataTBU[jk]).map((v) => v[3]);
-  const dataTinggiAnak = Object.keys(dataTBU[jk]).map((u) => parseInt(u) === umur ? dataTBU[jk][u][3] + (bb - bb) : null);
-
-  const ctx2 = document.createElement("canvas");
-  ctx2.height = 300;
-  document.getElementById("hasilStatus").appendChild(ctx2);
-  new Chart(ctx2, {
-    type: 'line',
-    data: {
-      labels: dataTinggi,
-      datasets: [
-        {
-          label: 'TB/U Median',
-          data: dataTinggiMedian,
-          borderColor: '#28a745',
-          borderWidth: 1,
-          fill: false
+        TBU: {
+          '< -3 SD': 'Sangat pendek',
+          '-3 s/d -2 SD': 'Pendek',
+          '-2 s/d +3 SD': 'Normal',
+          '> +3 SD': 'Tinggi'
         },
-        {
-          label: 'Tinggi Anak',
-          data: dataTinggiAnak,
-          borderColor: '#0a0',
-          backgroundColor: '#0a04',
-          fill: true
+        BBTB: {
+          '< -3 SD': 'Gizi buruk',
+          '-3 s/d -2 SD': 'Gizi kurang',
+          '-2 s/d +1 SD': 'Gizi baik',
+          '> +1 s/d +2 SD': 'Risiko gizi lebih',
+          '> +2 SD': 'Gizi lebih atau obesitas'
         }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'top' },
-        title: { display: true, text: 'Grafik Tinggi Badan Menurut Umur (TB/U)' }
-      }
+      };
+      return kategori[indeks][z];
     }
-  });
 
-  const tbBulat = Math.round(bb);
-  const tinggiKeys = Object.keys(dataBBTB[jk]);
-  const tinggiTerdekat = tinggiKeys.reduce((a, b) => Math.abs(b - tbBulat) < Math.abs(a - tbBulat) ? b : a);
-  const dataBBTBMedian = tinggiKeys.map((k) => dataBBTB[jk][k][3]);
-  const dataBBTBAnak = tinggiKeys.map((k) => parseInt(k) === parseInt(tinggiTerdekat) ? bb : null);
+    function hitungGizi() {
+      const nama = document.getElementById('nama').value;
+      const bb = parseFloat(document.getElementById('bb').value);
+      const tb = parseFloat(document.getElementById('tb').value);
 
-  const ctx3 = document.createElement("canvas");
-  ctx3.height = 300;
-  document.getElementById("hasilStatus").appendChild(ctx3);
-  new Chart(ctx3, {
-    type: 'line',
-    data: {
-      labels: tinggiKeys.map(k => k + ' cm'),
-      datasets: [
-        {
-          label: 'BB/TB Median',
-          data: dataBBTBMedian,
-          borderColor: '#007bff',
-          borderWidth: 1,
-          fill: false
+      const zBBU = cariKategori(bb, standarGizi.BBU, 'BBU');
+      const zTBU = cariKategori(tb, standarGizi.TBU, 'TBU');
+      const zBBTB = cariKategori(bb, standarGizi.BBTB, 'BBTB');
+
+      const hasil = `
+        <strong>Hasil Status Gizi Anak: ${nama}</strong>
+        <ul>
+          <li><strong>BB/U:</strong> ${klasifikasi('BBU', zBBU)}</li>
+          <li><strong>TB/U:</strong> ${klasifikasi('TBU', zTBU)}</li>
+          <li><strong>BB/TB:</strong> ${klasifikasi('BBTB', zBBTB)}</li>
+        </ul>
+      `;
+
+      const saran = `
+        <strong>Saran:</strong>
+        <ul>
+          <li>BB/U: ${klasifikasi('BBU', zBBU)} → Lanjutkan pemantauan berat badan.</li>
+          <li>TB/U: ${klasifikasi('TBU', zTBU)} → Pantau tinggi badan anak.</li>
+          <li>BB/TB: ${klasifikasi('BBTB', zBBTB)} → Evaluasi pola makan dan aktivitas anak.</li>
+        </ul>
+      `;
+
+      document.getElementById('hasil').innerHTML = hasil;
+      document.getElementById('saran').innerHTML = saran;
+
+      buatGrafik();
+    }
+
+    function buatGrafik() {
+      const config = (id, label, data) => new Chart(document.getElementById(id), {
+        type: 'line',
+        data: {
+          labels: ['-3SD', '-2SD', 'Median', '+1SD', '+2SD', '+3SD'],
+          datasets: [{ label, data, borderColor: '#e67e22', fill: false }]
         },
-        {
-          label: 'Berat Anak',
-          data: dataBBTBAnak,
-          borderColor: '#00f',
-          backgroundColor: '#00f4',
-          fill: true
+        options: {
+          responsive: true,
+          scales: { y: { beginAtZero: false } }
         }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'top' },
-        title: { display: true, text: 'Grafik Berat Badan Menurut Tinggi Badan (BB/TB)' }
-      }
+      });
+
+      config('chartBBU', 'BB/U', standarGizi.BBU);
+      config('chartTBU', 'TB/U', standarGizi.TBU);
+      config('chartBBTB', 'BB/TB', standarGizi.BBTB);
     }
-  });
-}
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'top' },
-        title: { display: true, text: 'Grafik Berat Badan Menurut Umur (BB/U)' }
-      }
+
+    function unduhPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text(document.getElementById('hasil').innerText, 10, 10);
+      doc.text(document.getElementById('saran').innerText, 10, 60);
+      doc.save('hasil-gizi.pdf');
     }
-  });
-}
+  </script>
+</body>
 
-function hitungStatusGizi() {
-  const nama = document.getElementById("nama").value;
-  const umur = parseInt(document.getElementById("umur").value);
-  const bb = parseFloat(document.getElementById("berat").value);
-  const tb = parseFloat(document.getElementById("tinggi").value);
-  const jk = document.getElementById("jenisKelamin").value;
-
-  const umurTerdekat = Object.keys(dataBBU[jk]).reduce((a, b) => Math.abs(b - umur) < Math.abs(a - umur) ? b : a);
-  const tinggiBulat = Math.round(tb);
-  const tinggiTerdekat = Object.keys(dataBBTB[jk]).reduce((a, b) => Math.abs(b - tinggiBulat) < Math.abs(a - tinggiBulat) ? b : a);
-
-  const zBBU = hitungZscore(bb, umurTerdekat, dataBBU[jk]);
-  const zTBU = hitungZscore(tb, umurTerdekat, dataTBU[jk]);
-  const zBBTB = hitungZscore(bb, tinggiTerdekat, dataBBTB[jk]);
-
-  const statusBBU = kategorikanZscore(zBBU, 'BB/U');
-  const statusTBU = kategorikanZscore(zTBU, 'TB/U');
-  const statusBBTB = kategorikanZscore(zBBTB, 'BB/TB');
-
-  document.getElementById("hasil").innerHTML = `
-    <p><strong>Nama:</strong> ${nama}</p>
-    <p><strong>Umur:</strong> ${umur} bulan</p>
-    <p><strong>BB/U:</strong> Z = ${zBBU?.toFixed(2)} (${statusBBU})</p>
-    <p><strong>TB/U:</strong> Z = ${zTBU?.toFixed(2)} (${statusTBU})</p>
-    <p><strong>BB/TB:</strong> Z = ${zBBTB?.toFixed(2)} (${statusBBTB})</p>
-    <p><strong>Berat Ideal (BB/U):</strong> ${dataBBU[jk][umurTerdekat]?.[3] ?? '-'} kg</p>
-    <p><strong>Tinggi Ideal (TB/U):</strong> ${dataTBU[jk][umurTerdekat]?.[3] ?? '-'} cm</p>
-  `;
-  document.getElementById("hasilStatus").style.display = "block";
-
-  document.getElementById("saran").innerHTML = `
-    <p><strong>BB/U:</strong> ${statusBBU} – ${statusBBU === 'Berat badan sangat kurang' ? 'Segera konsultasikan ke tenaga kesehatan dan pantau berat badan secara ketat.' :
-    statusBBU === 'Berat badan kurang' ? 'Tingkatkan asupan energi dan protein anak melalui makanan bergizi.' :
-    statusBBU === 'Risiko berat badan lebih' ? 'Awasi asupan kalori anak dan dorong aktivitas fisik seimbang.' :
-    'Pertahankan pola makan dan pemantauan rutin pertumbuhan.'}</p>
-
-    <p><strong>TB/U:</strong> ${statusTBU} – ${statusTBU === 'Sangat pendek' ? 'Perlu evaluasi kemungkinan stunting, berikan makanan bergizi tinggi dan stimulasi perkembangan.' :
-    statusTBU === 'Pendek' ? 'Berikan makanan bergizi seimbang dan pantau tinggi badan rutin.' :
-    statusTBU === 'Tinggi' ? 'Pastikan kebutuhan nutrisi dan olahraga anak sesuai usianya.' :
-    'Pertumbuhan baik, tetap lanjutkan pemantauan.'}</p>
-
-    <p><strong>BB/TB:</strong> ${statusBBTB} – ${statusBBTB === 'Gizi buruk' ? 'Perlu intervensi segera, rujuk ke fasilitas kesehatan dan beri makanan terapi gizi.' :
-    statusBBTB === 'Gizi kurang' ? 'Tingkatkan frekuensi dan kualitas makanan anak.' :
-    statusBBTB === 'Risiko gizi lebih' ? 'Kurangi konsumsi makanan tinggi gula dan lemak, serta tingkatkan aktivitas fisik.' :
-    statusBBTB === 'Gizi lebih' ? 'Konsultasikan ke tenaga gizi untuk modifikasi pola makan.' :
-    statusBBTB === 'Obesitas' ? 'Perlu pemantauan intensif dan perubahan pola hidup.' :
-    'Pertahankan pola makan dan pemantauan tumbuh kembang.'}</p>`;
-  document.getElementById("saranStatus").style.display = "block";
-
-  tampilkanGrafik(bb, umurTerdekat, jk);
-}
-
-function unduhPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Laporan Status Gizi Anak", 20, 20);
-  doc.text(document.getElementById("hasil").innerText, 20, 30);
-  doc.text(document.getElementById("saran").innerText, 20, 80);
-  doc.save("status_gizi.pdf");
-}
-</script>
-
+</html>
